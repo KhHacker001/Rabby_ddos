@@ -1,7 +1,7 @@
-requests
+requests[socks]
+torpy
 colorama
 random
 threading
 time
 os
-torpy
