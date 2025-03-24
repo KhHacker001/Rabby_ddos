@@ -1,7 +1,9 @@
 requests[socks]
+PySocks
 torpy
+stem
 colorama
-random
-threading
-time
-os
+certifi
+idna
+chardet
+urllib3
