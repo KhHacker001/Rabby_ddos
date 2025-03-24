@@ -174,3 +174,4 @@ python attack.py   (Windows/Termux)
 
 আমার সাথে যোগাযোগ করতে ভিজিট করেন http://rabby-hossein.42web.io/
 
+Tor proxy বন্ধের জন্য pkill tor
